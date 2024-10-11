@@ -20,5 +20,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: verify
+      - name: Install dependencies and build with Maven
+        run: mvn install -B -DskipTests
+
+      - name: Run tests
+        run: mvn test
+
+      - name: Verify code coverage
+        run: mvn verify

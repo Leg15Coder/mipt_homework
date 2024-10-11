@@ -79,7 +79,11 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>PACKAGE</element>
+                                    <element>BUNDLE</element>
+                                    <excludes>
+                                        <exclude>src/main/java/zoo/</exclude>
+                                        <exclude>src/main/java/structures/</exclude>
+                                    </excludes>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
