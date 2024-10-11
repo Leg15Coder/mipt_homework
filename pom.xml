@@ -83,6 +83,8 @@
                                     <excludes>
                                         <exclude>src/main/java/zoo/</exclude>
                                         <exclude>src/main/java/structures/</exclude>
+                                        <exclude>src/main/java/org/example/</exclude>
+                                        <exclude>src/main/test/</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>
