@@ -1,24 +1,24 @@
 package org.example;
 
-
-import structures.CustomArrayList;
+import sortings.BubbleSort;
+import sortings.MergeSort;
+import sortings.SorterType;
+import sortings.SortsManager;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
-        CustomArrayList<Integer> arr = new CustomArrayList<>();
-        for (int i = 1; i <= 16; ++i) {
-            arr.add(i);
-        }
-        System.out.println(arr.get(3));
-        System.out.println(arr.get(7));
-        System.out.println(arr.get(10));
+    public static void main(String[] args) throws Exception {
+        MergeSort mergeSortMax8 = new MergeSort(8);
+        MergeSort mergeSortMax16 = new MergeSort(16);
+        BubbleSort bubbleSortMax8 = new BubbleSort(8);
+        BubbleSort bubbleSortMax32 = new BubbleSort(32);
 
-        System.out.println(arr.remove(1));
-        System.out.println(arr.remove(4));
-        System.out.println(arr.remove(6));
+        SortsManager manager = new SortsManager(Arrays.asList(mergeSortMax8, mergeSortMax16, bubbleSortMax8, bubbleSortMax32));
 
-        System.out.println(arr.get(3));
-        System.out.println(arr.get(7));
-        System.out.println(arr.get(10));
+        List<Integer> list = Arrays.asList(10, 3, 8, 2, 29, 3, -3, 0, 7);
+
+        List<Integer> sortedList = manager.sort(list, SorterType.MERGE);
+        System.out.println(sortedList.toString());
     }
 }
