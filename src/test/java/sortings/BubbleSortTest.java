@@ -18,6 +18,13 @@ class BubbleSortTest {
   }
 
   @Test
+  void sortWithException() {
+    List<Integer> listToSort = Arrays.asList(1, -2, 5, 0, 9, 3, -7, 2);
+    BubbleSort sorter = new BubbleSort(4);
+    assertThrows(Exception.class, () -> sorter.sort(listToSort));
+  }
+
+  @Test
   void type() {
     SorterType answer = new BubbleSort(100).type();
     assertEquals(answer, SorterType.BUBBLE);

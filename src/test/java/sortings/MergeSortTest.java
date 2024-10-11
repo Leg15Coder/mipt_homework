@@ -28,6 +28,13 @@ class MergeSortTest {
   }
 
   @Test
+  void setElementsCountLimitWithException() {
+    MergeSort sorter = new MergeSort(17);
+    int n = rnd.nextInt(-1024, 0);
+    assertThrows(IllegalArgumentException.class, () -> sorter.setElementsCountLimit(n));
+  }
+
+  @Test
   void getElementsCountLimit() {
     int n = rnd.nextInt(1024);
     MergeSort sorter = new MergeSort(n);
