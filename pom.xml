@@ -81,10 +81,8 @@
                                 <rule>
                                     <element>BUNDLE</element>
                                     <excludes>
-                                        <exclude>src/main/java/zoo/</exclude>
-                                        <exclude>src/main/java/structures/</exclude>
-                                        <exclude>src/main/java/org/example/</exclude>
-                                        <exclude>src/main/test/</exclude>
+                                        <exclude>org/example/zoo/**</exclude>
+                                        <exclude>org/example/structures/**</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>
