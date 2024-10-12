@@ -1,34 +1,24 @@
 package org.example;
 
-import zoo.animals.*;
-import zoo.food.FoodList;
+import sortings.BubbleSort;
+import sortings.MergeSort;
+import sortings.SorterType;
+import sortings.SortsManager;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
-        Horse horse = new Horse();
-        Tiger tiger = new Tiger();
-        Dolphin dolphin = new Dolphin();
-        Eagle eagle = new Eagle();
-        Camel camel = new Camel();
+    public static void main(String[] args) throws Exception {
+        MergeSort mergeSortMax8 = new MergeSort(8);
+        MergeSort mergeSortMax16 = new MergeSort(16);
+        BubbleSort bubbleSortMax8 = new BubbleSort(8);
+        BubbleSort bubbleSortMax32 = new BubbleSort(32);
 
-        horse.eat(FoodList.Grass.GRASS);
-        tiger.eat(FoodList.Meat.BEEF);
-        dolphin.eat(FoodList.Meat.FISHMEAT);
-        eagle.eat(FoodList.Meat.OTHERMEAT);
+        SortsManager manager = new SortsManager(Arrays.asList(mergeSortMax8, mergeSortMax16, bubbleSortMax8, bubbleSortMax32));
 
-        try {
-            tiger.eat(FoodList.Meat.FISHMEAT);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        try {
-            dolphin.eat(FoodList.Meat.BEEF);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
+        List<Integer> list = Arrays.asList(10, 3, 8, 2, 29, 3, -3, 0, 7);
 
-        dolphin.swim();
-        eagle.fly();
-        camel.walk();
+        List<Integer> sortedList = manager.sort(list, SorterType.MERGE);
+        System.out.println(sortedList.toString());
     }
 }
