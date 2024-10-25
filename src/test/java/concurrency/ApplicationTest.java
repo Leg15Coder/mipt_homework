@@ -5,7 +5,7 @@ import concurrency.messaging.Message;
 import concurrency.messaging.MessageParser;
 import concurrency.users.User;
 import concurrency.users.UsersRepository;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class ApplicationTest {
   UsersRepository usersRepository = new UsersRepository();
 
   private void updateRepository() {
-    usersRepository.updateUserByMsisdn("89201054185", new User("dima", "ryaz"));
+    usersRepository.updateUserByMsisdn("89201054185", new User("Dima", "ryaz"));
     usersRepository.updateUserByMsisdn("88005553535", new User("Anton", "sosed"));
     usersRepository.updateUserByMsisdn("87776662660", new User("Matvey", "the best"));
 }
