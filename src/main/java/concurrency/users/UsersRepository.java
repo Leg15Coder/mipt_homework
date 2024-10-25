@@ -1,30 +1,47 @@
 package concurrency.users;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class UsersRepository implements UserRepository {
-  private final ArrayList<User> data = new ArrayList<>();
+  private final List<User> data = Collections.synchronizedList(new ArrayList<>());
 
   @Override
   public User findByMsisdn(String msisdn) {
-    for (User current : data) {
-      if (Objects.equals(current.getMSIDN(), msisdn)) {
-        return current;
-      }
+    if (msisdn == null) {
+      throw new IllegalArgumentException("msisdn не может быть null");
     }
-    return null;
+    synchronized (data) {
+      for (User current : data) {
+        if (Objects.equals(current.getMSISDN(), msisdn)) {
+          return current;
+        }
+      }
+      return null;
+    }
   }
 
   @Override
-  public void updateUserByMsisdn(String msisdn, User user) {
-    for (User current : data) {
-      if (Objects.equals(current.firstName, user.firstName) && Objects.equals(current.lastName, user.lastName)) {
-        current.setPhoneNumber(msisdn);
-        break;
-      }
+  public synchronized void updateUserByMsisdn(String msisdn, User user) {
+    if (msisdn == null) {
+      throw new IllegalArgumentException("msisdn не может быть null");
     }
-    user.setPhoneNumber(msisdn);
-    this.data.add(user);
+    if (user == null) {
+      throw new IllegalArgumentException("user не может быть null");
+    }
+    synchronized (data) {
+      for (User current : data) {
+        if (Objects.equals(current.getFirstName(), user.getFirstName()) && Objects.equals(current.getLastName(), user.getLastName())) {
+          this.data.remove(current);
+          current.setPhoneNumber(msisdn);
+          this.data.add(current);
+          break;
+        }
+      }
+      user.setPhoneNumber(msisdn);
+      this.data.add(user);
+    }
   }
 }
