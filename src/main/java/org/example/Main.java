@@ -1,7 +1,12 @@
 package org.example;
 
+import spark.Request;
+import spark.Response;
+import spark.Spark;
+
 public class Main {
+
     public static void main(String[] args) {
-        System.out.println("Hello, world!");
+        Spark.get("/hello", (Request request, Response response) -> "Hello, World!");
     }
 }
