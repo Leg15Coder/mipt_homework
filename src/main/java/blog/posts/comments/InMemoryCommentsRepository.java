@@ -1,13 +1,27 @@
-package blog.comments;
+package blog.posts.comments;
 
 import blog.exceptions.CommentIdDublicationException;
 import blog.exceptions.CommentNotFoundException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryCommentsRepository implements CommentsRepository {
   private final Map<CommentId, Comment> comments = new ConcurrentHashMap<>();
+  private final AtomicLong nextId = new AtomicLong(0);
+
+  @Override
+  public CommentId generateId() {
+    return new CommentId(nextId.getAndIncrement());
+  }
+
+  @Override
+  public List<Comment> getAll() {
+    return new ArrayList<>(comments.values());
+  }
 
   @Override
   public Comment findById(CommentId id) throws CommentNotFoundException {
@@ -34,10 +48,10 @@ public class InMemoryCommentsRepository implements CommentsRepository {
   }
 
   @Override
-  public synchronized void delete(Comment comment) throws CommentNotFoundException {
-    if (!comments.containsKey(comment.getId())) {
+  public synchronized void delete(CommentId comment) throws CommentNotFoundException {
+    if (!comments.containsKey(comment)) {
       throw new CommentNotFoundException("Невозможно удалить: такого коментария нет");
     }
-    comments.remove(comment.getId());
+    comments.remove(comment);
   }
 }

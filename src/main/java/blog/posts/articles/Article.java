@@ -1,6 +1,6 @@
-package blog.articles;
+package blog.posts.articles;
 
-import blog.comments.Comment;
+import blog.posts.comments.Comment;
 import blog.exceptions.CommentNotFoundException;
 
 import java.util.*;

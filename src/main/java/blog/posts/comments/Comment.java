@@ -1,6 +1,6 @@
-package blog.comments;
+package blog.posts.comments;
 
-import blog.articles.ArticleId;
+import blog.posts.articles.ArticleId;
 
 import java.util.Objects;
 
@@ -18,6 +18,10 @@ public class Comment {
 
   public Comment updateText(String text) {
     return new Comment(this.id, this.article, text);
+  }
+
+  public ArticleId getArticle() {
+    return this.article;
   }
 
   public CommentId getId() {

@@ -1,11 +1,11 @@
-package blog.comments;
+package blog.posts.articles;
 
 import java.util.Objects;
 
-public class CommentId {
+public class ArticleId {
   private final Long id;
 
-  public CommentId(long id) {
+  public ArticleId(long id) {
     this.id = id;
   }
 
@@ -16,8 +16,8 @@ public class CommentId {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof CommentId commentId)) return false;
-    return Objects.equals(id, commentId.id);
+    if (!(o instanceof ArticleId articleId)) return false;
+    return Objects.equals(id, articleId.id);
   }
 
   @Override
