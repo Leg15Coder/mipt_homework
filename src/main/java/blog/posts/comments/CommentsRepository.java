@@ -1,7 +1,7 @@
 package blog.posts.comments;
 
-import blog.exceptions.CommentIdDublicationException;
-import blog.exceptions.CommentNotFoundException;
+import blog.posts.exceptions.CommentIdDublicationException;
+import blog.posts.exceptions.CommentNotFoundException;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package blog.posts.articles;
 
-import blog.exceptions.ArticleIdDublicationException;
-import blog.exceptions.ArticleNotFoundException;
+import blog.posts.exceptions.ArticleIdDublicationException;
+import blog.posts.exceptions.ArticleNotFoundException;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package blog.posts.articles;
 
-import blog.exceptions.ArticleIdDublicationException;
-import blog.exceptions.ArticleNotFoundException;
+import blog.posts.exceptions.ArticleIdDublicationException;
+import blog.posts.exceptions.ArticleNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryArticlesRepository implements ArticlesRepository {
   private final Map<ArticleId, Article> articles = new ConcurrentHashMap<>();
-  private final AtomicLong nextId = new  AtomicLong(0);
+  private final AtomicLong nextId = new AtomicLong(0);
 
   @Override
   public ArticleId generateId() {
@@ -48,10 +48,10 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
   }
 
   @Override
-  public synchronized void delete(ArticleId article) throws ArticleNotFoundException {
-    if (!articles.containsKey(article)) {
+  public synchronized void delete(ArticleId articleId) throws ArticleNotFoundException {
+    if (!articles.containsKey(articleId)) {
       throw new ArticleNotFoundException("Невозможно удалить: такой статьи нет");
     }
-    articles.remove(article);
+    articles.remove(articleId);
   }
 }

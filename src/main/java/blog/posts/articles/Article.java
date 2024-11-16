@@ -1,7 +1,7 @@
 package blog.posts.articles;
 
 import blog.posts.comments.Comment;
-import blog.exceptions.CommentNotFoundException;
+import blog.posts.exceptions.CommentNotFoundException;
 
 import java.util.*;
 
@@ -23,6 +23,18 @@ public class Article {
     return this.id;
   }
 
+  public String getHeader() {
+    return this.header;
+  }
+
+  public Set<String> getTags() {
+    return new HashSet<>(this.tags);
+  }
+
+  public List<Comment> getComments() {
+    return new ArrayList<>(this.comments);
+  }
+
   public Article addTag(String tag) {
     Set<String> newTags = new HashSet<>(this.tags);
     newTags.add(tag);
@@ -32,29 +44,29 @@ public class Article {
   public Article addTags(Set<String> tags) {
     Set<String> newTags = new HashSet<>(this.tags);
     newTags.addAll(tags);
-    return new Article(this.id, this.header, newTags, this.comments);
+    return new Article(getId(), getHeader(), newTags, getComments());
   }
 
   public Article removeTag(String tag) {
     Set<String> newTags = new HashSet<>(this.tags);
     newTags.remove(tag);
-    return new Article(this.id, this.header, newTags, this.comments);
+    return new Article(getId(), getHeader(), newTags, getComments());
   }
 
   public Article removeTags(Set<String> tags) {
     Set<String> newTags = new HashSet<>(this.tags);
     newTags.removeAll(tags);
-    return new Article(this.id, this.header, newTags, this.comments);
+    return new Article(getId(), getHeader(), newTags, getComments());
   }
 
   public Article switchHeader(String header) {
-    return new Article(this.id, header, this.tags, this.comments);
+    return new Article(getId(), header, getTags(), getComments());
   }
 
   public Article addComment(Comment comment) {
     List<Comment> newComments = new ArrayList<>(this.comments);
     newComments.add(comment);
-    return new Article(this.id, this.header, this.tags, newComments);
+    return new Article(getId(), getHeader(), getTags(), newComments);
   }
 
   public Article removeComment(Comment comment) throws CommentNotFoundException {
@@ -63,7 +75,7 @@ public class Article {
     }
     List<Comment> newComments = new ArrayList<>(this.comments);
     newComments.remove(comment);
-    return new Article(this.id, this.header, this.tags, newComments);
+    return new Article(getId(), getHeader(), getTags(), newComments);
   }
 
   @Override

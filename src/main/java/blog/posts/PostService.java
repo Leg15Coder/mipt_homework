@@ -1,6 +1,6 @@
 package blog.posts;
 
-import blog.exceptions.*;
+import blog.posts.exceptions.*;
 import blog.posts.articles.Article;
 import blog.posts.articles.ArticleId;
 import blog.posts.articles.ArticlesRepository;
@@ -37,6 +37,17 @@ public class PostService {
     try {
       ArticleId articleId = new ArticleId(id);
       Article articleToUpdate = this.articlesRepository.findById(articleId);
+
+      if (header == null) {
+        header = articleToUpdate.getHeader();
+      }
+      if (tags == null) {
+        tags = articleToUpdate.getTags();
+      }
+      if (comments == null) {
+        comments = articleToUpdate.getComments();
+      }
+
       Article updatedArticle = new Article(
           articleId,
           header,
@@ -45,17 +56,22 @@ public class PostService {
       );
       this.articlesRepository.update(updatedArticle);
     } catch (ArticleNotFoundException e) {
-      throw new ArticleUpdateException("Не удалось обнавить статью с ID=" + id, e);
+      throw new ArticleUpdateException("Не удалось обновить статью с ID=" + id, e);
     }
   }
 
   public long createArticle(String header, Set<String> tags) throws ArticleCreateException {
+    if (header == null || tags == null) {
+      throw new ArticleCreateException("Не удалось добавить статью, так как передан элемент типа null", new Exception());
+    }
+
     Article newArticle = new Article(
         articlesRepository.generateId(),
         header,
         tags,
         new ArrayList<>()
         );
+
     try {
       this.articlesRepository.add(newArticle);
       return newArticle.getId().getId();
@@ -73,11 +89,16 @@ public class PostService {
   }
 
   public long createComment(long articleId, String text) throws CommentCreateException {
+    if (text == null) {
+      throw new CommentCreateException("Не удалось создать комментарий, передан пустой контент", new Exception());
+    }
+
     Comment newComment = new Comment(
         commentsRepository.generateId(),
         new ArticleId(articleId),
         text
     );
+
     try {
       this.commentsRepository.add(newComment);
       Article articleWithNewComment = findArticleById(articleId);
