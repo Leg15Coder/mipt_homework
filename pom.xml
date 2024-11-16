@@ -46,6 +46,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.4.8</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

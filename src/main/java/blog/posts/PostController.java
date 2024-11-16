@@ -57,6 +57,7 @@ public class PostController implements Controller {
               response.status(200);
             }
 
+            LOG.debug("Showed all articles");
             return objectMapper.writeValueAsString(new ArticleGetListResponse(articles));
           } catch (Exception e) {
             LOG.error("Ошибка обработки (get) /api/articles/all : {}", e.toString());
@@ -80,6 +81,7 @@ public class PostController implements Controller {
 
             response.status(200);
 
+            LOG.debug("successfully get article with id={}", id);
             return objectMapper.writeValueAsString(new ArticleGetResponse(
                 article.getHeader(),
                 article.getTags(),
@@ -120,6 +122,7 @@ public class PostController implements Controller {
 
             response.status(201);
 
+            LOG.debug("successfully update article with id={}", id);
             return objectMapper.writeValueAsString(new ArticleUpdateResponse(
                 id,
                 "SUCCESS UPDATE"
@@ -149,6 +152,7 @@ public class PostController implements Controller {
 
             response.status(200);
 
+            LOG.debug("Successfully deleted article with id={}", id);
             return objectMapper.writeValueAsString(new ArticleDeleteResponse(
                 id,
                 "SUCCESS DELETE"
@@ -184,6 +188,7 @@ public class PostController implements Controller {
 
             response.status(201);
 
+            LOG.debug("Created new article with id={}", newArticleId);
             return objectMapper.writeValueAsString(new ArticleCreateResponse(
                 newArticleId,
                 "SUCCESSFULLY CREATED"
@@ -219,6 +224,7 @@ public class PostController implements Controller {
 
             response.status(201);
 
+            LOG.debug("create new comment with id={}, for article with id={}", newCommentId, createRequest.article());
             return objectMapper.writeValueAsString(new ArticleCreateResponse(
                 newCommentId,
                 "SUCCESSFULLY CREATED"
@@ -248,6 +254,7 @@ public class PostController implements Controller {
 
             response.status(200);
 
+            LOG.debug("deleted comment with id={}", id);
             return objectMapper.writeValueAsString(new CommentDeleteResponse(
                 id,
                 "SUCCESS DELETE"
