@@ -1,7 +1,9 @@
 package org.example;
 
 import blog.Application;
+import blog.TemplateFactory;
 import blog.posts.PostController;
+import blog.posts.PostFreemarkerController;
 import blog.posts.PostService;
 import blog.posts.articles.InMemoryArticlesRepository;
 import blog.posts.comments.InMemoryCommentsRepository;
@@ -15,15 +17,21 @@ public class Main {
     public static void main(String[] args) {
         Service service = Service.ignite();
         ObjectMapper objectMapper = new ObjectMapper();
-        Application application = new Application(
+      final var postService = new PostService(
+          new InMemoryArticlesRepository(),
+          new InMemoryCommentsRepository()
+      );
+      Application application = new Application(
             List.of(
                 new PostController(
                     service,
-                    new PostService(
-                        new InMemoryArticlesRepository(),
-                        new InMemoryCommentsRepository()
-                    ),
+                    postService,
                     objectMapper
+                ),
+                new PostFreemarkerController(
+                    service,
+                    postService,
+                    TemplateFactory.freeMarkerEngine()
                 )
             )
         );
