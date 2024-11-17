@@ -1,7 +1,6 @@
 package blog.posts.articles;
 
-import blog.posts.exceptions.ArticleIdDublicationException;
-import blog.posts.exceptions.ArticleNotFoundException;
+import blog.posts.exceptions.*;
 
 import java.util.List;
 
@@ -12,9 +11,9 @@ public interface ArticlesRepository {
 
   Article findById(ArticleId id) throws ArticleNotFoundException;
 
-  void add(Article article) throws ArticleIdDublicationException;
+  void add(Article article) throws ArticleIdDublicationException, ArticleHeaderExceedHeaderException, ArticleTagsCountExceedHeaderException, ArticleTagLengthExceedHeaderException;
 
-  void update(Article article) throws ArticleNotFoundException;
+  void update(Article article) throws ArticleNotFoundException, ArticleTagsCountExceedHeaderException, ArticleTagLengthExceedHeaderException, ArticleHeaderExceedHeaderException;
 
   void delete(ArticleId article) throws ArticleNotFoundException;
 }

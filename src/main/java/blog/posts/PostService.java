@@ -57,6 +57,8 @@ public class PostService {
       this.articlesRepository.update(updatedArticle);
     } catch (ArticleNotFoundException e) {
       throw new ArticleUpdateException("Не удалось обновить статью с ID=" + id, e);
+    } catch (ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
+      throw new ArticleUpdateException("Превышения лимит переданных данных", e);
     }
   }
 
@@ -77,13 +79,19 @@ public class PostService {
       return newArticle.getId().getId();
     } catch (ArticleIdDublicationException e) {
       throw new ArticleCreateException("Не удалось добавить статью, так как она уже существует", e);
+    } catch (ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
+      throw new ArticleCreateException("Превышения лимит переданных данных", e);
     }
   }
 
   public void deleteArticle(long id) throws ArticleDeleteException {
     try {
+      Article article = this.articlesRepository.findById(new ArticleId(id));
+      for (var comment : article.getComments()) {
+        this.commentsRepository.delete(comment.getId());
+      }
       this.articlesRepository.delete(new ArticleId(id));
-    } catch (ArticleNotFoundException e) {
+    } catch (ArticleNotFoundException | CommentNotFoundException e) {
       throw new ArticleDeleteException("Не удалось удалить статью с ID=" + id, e);
     }
   }
@@ -104,7 +112,7 @@ public class PostService {
       Article articleWithNewComment = findArticleById(articleId);
       Article updatedArticle = articleWithNewComment.addComment(newComment);
       articlesRepository.update(updatedArticle);
-    } catch (CommentIdDublicationException | ArticleFindException | ArticleNotFoundException e) {
+    } catch (CommentIdDublicationException | ArticleFindException | ArticleNotFoundException | ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new CommentCreateException("Не удалось создать комментарий", e);
     }
     return newComment.getId().getId();
@@ -119,7 +127,7 @@ public class PostService {
       Article articleWithDeletedComment = this.articlesRepository.findById(articleId);
       Article updatedArticle = articleWithDeletedComment.removeComment(commentToDelete);
       articlesRepository.update(updatedArticle);
-    } catch (ArticleNotFoundException | CommentNotFoundException e) {
+    } catch (ArticleNotFoundException | CommentNotFoundException | ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new CommentDeleteException("Не удалось удалить комментарий с ID=" + id, e);
     }
   }

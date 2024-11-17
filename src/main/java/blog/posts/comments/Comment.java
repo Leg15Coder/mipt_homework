@@ -28,6 +28,10 @@ public class Comment {
     return this.id;
   }
 
+  public String getText() {
+    return this.text;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

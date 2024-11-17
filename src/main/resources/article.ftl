@@ -8,18 +8,15 @@
 
 <body>
 
-<h1>Посты</h1>
+<h1>${article.header}</h1>
+<p></p>
 <table>
   <tr>
-    <th>Название</th>
-    <th>Теги</th>
-    <th>Количество комментариев</th>
+    <th>Комментарии</th>
   </tr>
-    <#list posts as post>
+    <#list comments as comment>
       <tr>
-        <td><a href="/article/${post.id}">${post.header}</a></td>
-        <td>${post.tags}</td>
-        <td>${post.comments_count}</td>
+        <td>${comment.text}</td>
       </tr>
     </#list>
 </table>

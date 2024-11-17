@@ -1,7 +1,6 @@
 package blog.posts.articles;
 
-import blog.posts.exceptions.ArticleIdDublicationException;
-import blog.posts.exceptions.ArticleNotFoundException;
+import blog.posts.exceptions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +9,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryArticlesRepository implements ArticlesRepository {
+  static final long MAX_HEADER_LENGTH = 1024L;
+  static final long MAX_TAGS_COUNT = 256L;
+  static final long MAX_TAG_LENGTH = 256L;
+
   private final Map<ArticleId, Article> articles = new ConcurrentHashMap<>();
   private final AtomicLong nextId = new AtomicLong(0);
+
+  private void checkArticleData(Article article)
+      throws ArticleTagLengthExceedHeaderException, ArticleTagsCountExceedHeaderException, ArticleHeaderExceedHeaderException {
+    if (article.getHeader().length() > MAX_HEADER_LENGTH) {
+      throw new ArticleHeaderExceedHeaderException("Слишком большой размер заголовка");
+    }
+    if (article.getTags().size() > MAX_TAGS_COUNT) {
+      throw new ArticleTagsCountExceedHeaderException("Превышено допустимое количество текгов на одну статью");
+    }
+    for (var tag : article.getTags()) {
+      if (tag.length() > MAX_TAG_LENGTH) {
+        throw new ArticleTagLengthExceedHeaderException("Слишком большой размер тега");
+      }
+    }
+  }
 
   @Override
   public ArticleId generateId() {
@@ -32,7 +50,9 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
   }
 
   @Override
-  public synchronized void add(Article article) throws ArticleIdDublicationException {
+  public synchronized void add(Article article)
+      throws ArticleIdDublicationException, ArticleHeaderExceedHeaderException, ArticleTagsCountExceedHeaderException, ArticleTagLengthExceedHeaderException {
+    checkArticleData(article);
     if (articles.containsKey(article.getId())) {
       throw new ArticleIdDublicationException("Такая статья уже есть");
     }
@@ -40,7 +60,9 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
   }
 
   @Override
-  public synchronized void update(Article article) throws ArticleNotFoundException {
+  public synchronized void update(Article article)
+      throws ArticleNotFoundException, ArticleTagsCountExceedHeaderException, ArticleTagLengthExceedHeaderException, ArticleHeaderExceedHeaderException {
+    checkArticleData(article);
     if (!articles.containsKey(article.getId())) {
       throw new ArticleNotFoundException("Невозможно обновить: такой статьи нет");
     }

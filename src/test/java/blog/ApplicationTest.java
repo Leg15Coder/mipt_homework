@@ -34,7 +34,7 @@ class ApplicationTest {
   @AfterEach
   void afterEach() {
     service.stop();
-    service.awaitStop();
+    // service.awaitStop(); // todo later
   }
 
   @Test
@@ -148,6 +148,31 @@ class ApplicationTest {
             HttpResponse.BodyHandlers.ofString(UTF_8)
         );
     assertEquals(400, response.statusCode());
+
+    response = HttpClient.newHttpClient()
+        .send(
+            HttpRequest.newBuilder()
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        """
+                        { "article": %d, "text": "Hi, how are u?" }
+                        """.formatted(newArticleId)
+                    ))
+                .uri(URI.create("http://localhost:%d/api/comments".formatted(service.port())))
+                .build(),
+            HttpResponse.BodyHandlers.ofString(UTF_8)
+        );
+    assertEquals(201, response.statusCode());
+
+    response = HttpClient.newHttpClient()
+        .send(
+            HttpRequest.newBuilder()
+                .DELETE()
+                .uri(URI.create("http://localhost:%d/api/articles/%d".formatted(service.port(), newArticleId)))
+                .build(),
+            HttpResponse.BodyHandlers.ofString(UTF_8)
+        );
+    assertEquals(200, response.statusCode());
   }
 
   @Test

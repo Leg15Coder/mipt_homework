@@ -13,4 +13,5 @@ public class TemplateFactory {
     freeMarkerConfiguration.setTemplateLoader(new ClassTemplateLoader(Main.class, "/"));
     return freeMarkerEngine;
   }
+
 }
