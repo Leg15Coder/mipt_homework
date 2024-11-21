@@ -257,7 +257,7 @@ class ApplicationTest {
                 .build(),
             HttpResponse.BodyHandlers.ofString(UTF_8)
         );
-    assertEquals(201, response.statusCode());
+    assertEquals(204, response.statusCode());
 
     response = HttpClient.newHttpClient()
         .send(
@@ -273,7 +273,7 @@ class ApplicationTest {
         .send(
             HttpRequest.newBuilder()
                 .GET()
-                .uri(URI.create("http://localhost:%d/api/articles/all".formatted(service.port())))
+                .uri(URI.create("http://localhost:%d/api/articles".formatted(service.port())))
                 .build(),
             HttpResponse.BodyHandlers.ofString(UTF_8)
         );
