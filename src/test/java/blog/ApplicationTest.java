@@ -176,7 +176,7 @@ class ApplicationTest {
   }
 
   @Test
-  void Generale2eTest() throws Exception {
+  void generale2eTest() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
     Application application = new Application(
         List.of(

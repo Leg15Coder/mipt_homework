@@ -45,18 +45,13 @@ public class PostController implements Controller {
 
   private void getAllArticles() {
     service.get(
-        "/api/articles/all",
+        "/api/articles",
         (Request request, Response response) -> {
           response.type("application/json");
           try {
             List<Article> articles = postService.getAll();
 
-            if (articles.isEmpty()) {
-              response.status(204);
-            } else {
-              response.status(200);
-            }
-
+            response.status(200);
             LOG.debug("Showed all articles");
             return objectMapper.writeValueAsString(new ArticleGetListResponse(articles));
           } catch (Exception e) {
@@ -120,13 +115,10 @@ public class PostController implements Controller {
                 updateRequest.comments()
             );
 
-            response.status(201);
+            response.status(204);
 
             LOG.debug("successfully update article with id={}", id);
-            return objectMapper.writeValueAsString(new ArticleUpdateResponse(
-                id,
-                "SUCCESS UPDATE"
-            ));
+            return objectMapper.writeValueAsString(new ArticleUpdateResponse());
           } catch (ArticleException e) {
             LOG.warn("Ошибка {} обработки (put) /api/articles/:id : {}", e.getClass(), e.toString());
             response.status(404);
@@ -225,7 +217,7 @@ public class PostController implements Controller {
             response.status(201);
 
             LOG.debug("create new comment with id={}, for article with id={}", newCommentId, createRequest.article());
-            return objectMapper.writeValueAsString(new ArticleCreateResponse(
+            return objectMapper.writeValueAsString(new CommentCreateResponse(
                 newCommentId,
                 "SUCCESSFULLY CREATED"
             ));

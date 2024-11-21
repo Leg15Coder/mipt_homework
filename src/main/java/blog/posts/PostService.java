@@ -87,11 +87,16 @@ public class PostService {
   public void deleteArticle(long id) throws ArticleDeleteException {
     try {
       Article article = this.articlesRepository.findById(new ArticleId(id));
+
       for (var comment : article.getComments()) {
-        this.commentsRepository.delete(comment.getId());
+        try {
+          this.commentsRepository.delete(comment.getId());
+        } catch (CommentNotFoundException e) {
+          continue; // Комментария уже нет
+        }
       }
       this.articlesRepository.delete(new ArticleId(id));
-    } catch (ArticleNotFoundException | CommentNotFoundException e) {
+    } catch (ArticleNotFoundException e) {
       throw new ArticleDeleteException("Не удалось удалить статью с ID=" + id, e);
     }
   }
