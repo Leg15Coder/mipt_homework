@@ -1,0 +1,1 @@
+SELECT post_id FROM post WHERE post_id IN (SELECT * FROM comment WHERE post_id=post_id) HAVING count(*)=2 AND length(content)>20 AND LEFT(title, 1) LIKE ORDER BY post_id;
