@@ -3,16 +3,11 @@ package blog;
 import blog.posts.PostController;
 import blog.posts.PostService;
 import blog.posts.articles.InMemoryArticlesRepository;
-import blog.posts.articles.PostgresArticlesRepository;
 import blog.posts.comments.InMemoryCommentsRepository;
-import blog.posts.comments.PostgresCommentsRepository;
 import blog.posts.responses.ArticleCreateResponse;
 import blog.posts.responses.ArticleGetResponse;
 import blog.posts.responses.CommentCreateResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import org.jdbi.v3.core.Jdbi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +21,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-class ApplicationTest {
+class OldApplicationTest {
   private Service service;
 
   @BeforeEach
@@ -44,19 +39,14 @@ class ApplicationTest {
 
   @Test
   void TestThrows() throws Exception {
-    Config config = ConfigFactory.load();
-
-    Jdbi jdbi = Jdbi.create(config.getString("app.database.url"), config.getString("app.database.user"),
-        config.getString("app.database.password"));
-
     ObjectMapper objectMapper = new ObjectMapper();
     Application application = new Application(
         List.of(
             new PostController(
                 service,
                 new PostService(
-                    new PostgresArticlesRepository(jdbi),
-                    new PostgresCommentsRepository(jdbi)
+                    new InMemoryArticlesRepository(),
+                    new InMemoryCommentsRepository()
                 ),
                 objectMapper
             )

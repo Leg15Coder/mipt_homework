@@ -29,6 +29,7 @@ public class Main {
             .locations("classpath:db/migrations")
             .dataSource(config.getString("app.database.url"), config.getString("app.database.user"),
                 config.getString("app.database.password"))
+            .baselineOnMigrate(true)
             .load();
     flyway.migrate();
 

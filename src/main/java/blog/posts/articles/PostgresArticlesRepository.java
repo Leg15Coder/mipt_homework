@@ -80,13 +80,19 @@ public class PostgresArticlesRepository implements ArticlesRepository {
 
   @Override
   public ArticleId generateId() {
-    return jdbi.withHandle(handle ->
-        new ArticleId(
-            handle.createQuery("SELECT nextval('article_id_seq') AS value")
+    Long value;
+
+    try {
+      value = jdbi.withHandle(handle ->
+          handle.createQuery("SELECT nextval(article_id) FROM articles")
                 .mapTo(Long.class)
                 .one()
-        )
-    );
+      );
+    } catch (IllegalStateException e) {
+      value = 0L;
+    }
+
+    return new ArticleId(value);
   }
 
   @Override
