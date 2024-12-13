@@ -8,6 +8,7 @@ import java.util.*;
 public class Article {
   private final ArticleId id;
 
+  final boolean trending;
   final String header;
   final Set<String> tags;
   final List<Comment> comments;
@@ -17,6 +18,7 @@ public class Article {
     this.header = header;
     this.tags = tags;
     this.comments = comments;
+    this.trending = comments.size() > 3;
   }
 
   public ArticleId getId() {
