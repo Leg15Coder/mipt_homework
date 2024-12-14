@@ -39,7 +39,7 @@ public class PostFreemarkerController implements Controller {
         "/",
         (Request request, Response response) -> {
           response.type("text/html; charset=utf-8");
-          List<Article> posts = postService.getAll();
+          List<Article> posts = postService.getAllArticles();
           List<Map<String, String>> postMapList =
               posts.stream()
                   .map(article -> Map.of(

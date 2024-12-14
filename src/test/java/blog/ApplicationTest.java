@@ -298,14 +298,6 @@ class ApplicationTest {
         );
     assertEquals(204, response.statusCode());
 
-    System.out.println("!!! " + newCommentId);
-
-    System.out.print("!!! [ ");
-    for (var e : rep.getAll()) {
-      System.out.print(e.getId().getId() + ", ");
-    }
-    System.out.println(" ]");
-
     response = HttpClient.newHttpClient()
         .send(
             HttpRequest.newBuilder()
@@ -343,5 +335,44 @@ class ApplicationTest {
     assertEquals("updated article", articleGetResponse.header());
     assertEquals(new HashSet<>(List.of("newest", "the best")), articleGetResponse.tags());
     assertEquals(0, articleGetResponse.comments().size());
+
+    response = HttpClient.newHttpClient()
+        .send(
+            HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create("http://localhost:%d/api/comments".formatted(service.port())))
+                .build(),
+            HttpResponse.BodyHandlers.ofString(UTF_8)
+        );
+    assertEquals(200, response.statusCode());
+
+    response = HttpClient.newHttpClient()
+        .send(
+            HttpRequest.newBuilder()
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        """
+                            [
+                              {
+                                "header": "Article 1 Title",
+                                "tags": ["tag1", "tag2", "tag3"]
+                              },
+                              {
+                                "header": "Article 2 Title",
+                                "tags": ["tagA", "tagB"]
+                              },
+                              {
+                                "header": "Article 3 Title",
+                                "tags": ["tagX", "tagY", "tagZ"]
+                              }
+                            ]
+                            """
+                    )
+                )
+                .uri(URI.create("http://localhost:%d/api/articles/many".formatted(service.port())))
+                .build(),
+            HttpResponse.BodyHandlers.ofString(UTF_8)
+        );
+    assertEquals(200, response.statusCode());
   }
 }

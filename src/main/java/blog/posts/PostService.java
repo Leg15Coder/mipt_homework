@@ -7,8 +7,6 @@ import blog.posts.articles.ArticlesRepository;
 import blog.posts.comments.Comment;
 import blog.posts.comments.CommentId;
 import blog.posts.comments.CommentsRepository;
-import org.jdbi.v3.core.Handle;
-import org.jdbi.v3.core.Jdbi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,7 @@ public class PostService {
     this.commentsRepository = commentsRepository;
   }
 
-  public List<Article> getAll() {
+  public List<Article> getAllArticles() {
     return this.articlesRepository.getAll();
   }
 
@@ -80,6 +78,14 @@ public class PostService {
     } catch (ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new ArticleCreateException("Превышения лимит переданных данных", e);
     }
+  }
+
+  public List<Comment> getAllComments() {
+    return this.commentsRepository.getAll();
+  }
+
+  public List<Comment> getCommentsByArticleId(long articleId) {
+    return this.commentsRepository.findAllByArticleId(new ArticleId(articleId));
   }
 
   public void deleteArticle(long id) throws ArticleDeleteException {

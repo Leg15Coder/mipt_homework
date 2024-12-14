@@ -31,7 +31,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
 
   @Override
   public CommentId generateId() {
-    Long value;
+    long value;
 
     try {
       value = jdbi.withHandle(handle ->

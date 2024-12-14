@@ -4,9 +4,7 @@ import blog.posts.articles.Article;
 import blog.posts.comments.Comment;
 import blog.posts.exceptions.ArticleException;
 import blog.posts.exceptions.CommentException;
-import blog.posts.requests.ArticleCreateRequest;
-import blog.posts.requests.ArticleUpdateRequest;
-import blog.posts.requests.CommentCreateRequest;
+import blog.posts.requests.*;
 import blog.posts.responses.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import blog.Controller;
@@ -16,7 +14,10 @@ import spark.Service;
 import spark.Request;
 import spark.Response;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostController implements Controller {
   private static final Logger LOG = LoggerFactory.getLogger(PostController.class);
@@ -35,10 +36,12 @@ public class PostController implements Controller {
   public void initializeEndpoints() {
     getAllArticles();
     getArticleByIdWithComments();
+    createArticles();
     updateArticleById();
     deleteArticleById();
-    addArticle();
-    addComment();
+    createArticle();
+    getAllComments();
+    createComment();
     deleteComment();
     LOG.info("Проинициализирован PostController");
   }
@@ -49,13 +52,13 @@ public class PostController implements Controller {
         (Request request, Response response) -> {
           response.type("application/json");
           try {
-            List<Article> articles = postService.getAll();
+            List<Article> articles = postService.getAllArticles();
 
             response.status(200);
-            LOG.debug("Showed all articles");
+            LOG.debug("Выведены все статьи");
             return objectMapper.writeValueAsString(new ArticleGetListResponse(articles));
           } catch (Exception e) {
-            LOG.error("Ошибка обработки (get) /api/articles/all : {}", e.toString());
+            LOG.error("Ошибка обработки (get) /api/articles : {}", e.toString());
             response.status(500);
             return objectMapper.writeValueAsString(new ErrorResponse(e.toString()));
           }
@@ -162,7 +165,7 @@ public class PostController implements Controller {
     );
   }
 
-  private void addArticle() {
+  private void createArticle() {
     service.post(
         "/api/articles",
         (Request request, Response response) -> {
@@ -180,7 +183,7 @@ public class PostController implements Controller {
 
             response.status(201);
 
-            LOG.debug("Created new article with id={}", newArticleId);
+            LOG.debug("Создан новый пост с ID={}", newArticleId);
             return objectMapper.writeValueAsString(new ArticleCreateResponse(
                 newArticleId,
                 "SUCCESSFULLY CREATED"
@@ -198,7 +201,94 @@ public class PostController implements Controller {
     );
   }
 
-  private void addComment() {
+  private void createArticles() {
+    service.post(
+        "/api/articles/many",
+        (Request request, Response response) -> {
+          response.type("application/json");
+          try {
+            List<ArticleCreateRequest> createRequests = objectMapper.readValue(
+                request.body(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, ArticleCreateRequest.class)
+            );
+
+            List<String> responses = new ArrayList<>();
+
+            for (ArticleCreateRequest subRequest : createRequests) {
+              String subResponse;
+
+              try {
+                long newArticleId = postService.createArticle(
+                    subRequest.header(),
+                    subRequest.tags()
+                );
+
+                LOG.debug("Создан новый (частичный) пост с ID={}", newArticleId);
+                subResponse = objectMapper.writeValueAsString(new ArticleCreateResponse(
+                    newArticleId,
+                    "SUCCESSFULLY CREATED"
+                ));
+              } catch (ArticleException e) {
+                LOG.warn("Ошибка {} обработки элемента запроса (post) /api/articles/many : {}", e.getClass(), e.toString());
+                subResponse = objectMapper.writeValueAsString(new ErrorResponse(e.toString()));
+              } catch (Exception e) {
+                LOG.error("Ошибка обработки элемента запроса (post) /api/articles/many : {}", e.toString());
+                subResponse = objectMapper.writeValueAsString(new ErrorResponse(e.toString()));
+              }
+
+              responses.add(subResponse);
+            }
+
+            response.status(200);
+            LOG.debug("Created new articles with IDs={}", responses);
+            return objectMapper.writeValueAsString(new ManyArticlesCreateResponse(
+                responses,
+                "SUCCESSFULLY CREATED"
+            ));
+          } catch (Exception e) {
+            LOG.error("Ошибка обработки (post) /api/articles/many : {}", e.toString());
+            response.status(500);
+            return objectMapper.writeValueAsString(new ErrorResponse(e.toString()));
+          }
+        }
+    );
+  }
+
+  private void getAllComments() {
+    service.get(
+        "/api/comments",
+        (Request request, Response response) -> {
+          response.type("application/json");
+          try {
+            List<Comment> comments;
+            if (!request.body().isEmpty()) {
+              CommentGetRequest getRequest = objectMapper.readValue(
+                  request.body(),
+                  CommentGetRequest.class
+              );
+
+              if (getRequest.article() == null) {
+                comments = postService.getAllComments();
+              } else {
+                comments = postService.getCommentsByArticleId(getRequest.article());
+              }
+            } else {
+              comments = postService.getAllComments();
+            }
+
+            response.status(200);
+            LOG.debug("Выведены комментарии по запросу");
+            return objectMapper.writeValueAsString(new CommentsGetListResponse(comments));
+          } catch (Exception e) {
+            LOG.error("Ошибка обработки (get) /api/comments : {}", e.toString());
+            response.status(500);
+            return objectMapper.writeValueAsString(new ErrorResponse(e.toString()));
+          }
+        }
+    );
+  }
+
+  private void createComment() {
     service.post(
         "/api/comments",
         (Request request, Response response) -> {
