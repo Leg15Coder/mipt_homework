@@ -3,6 +3,7 @@ package blog.posts.articles;
 import blog.posts.comments.Comment;
 import blog.posts.comments.CommentId;
 import blog.posts.exceptions.*;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 
 import java.sql.Array;
@@ -84,11 +85,11 @@ public class PostgresArticlesRepository implements ArticlesRepository {
 
     try {
       value = jdbi.withHandle(handle ->
-          handle.createQuery("SELECT nextval(article_id) FROM articles")
+          handle.createQuery("SELECT max(article_id) FROM articles")
                 .mapTo(Long.class)
                 .one()
-      );
-    } catch (IllegalStateException e) {
+      ) + 1;
+    } catch (IllegalStateException | NullPointerException e) {
       value = 0L;
     }
 
@@ -123,16 +124,19 @@ public class PostgresArticlesRepository implements ArticlesRepository {
     checkArticleData(article);
 
     try {
-      jdbi.useHandle(handle ->
-          handle.createUpdate(
-                  "INSERT INTO articles (article_id, header, trending, tags) " +
-                      "VALUES (:article_id, :header, :trending, :tags)")
-              .bind("article_id", article.getId().getId())
-              .bind("header", article.getHeader())
-              .bind("trending", article.trending)
-              .bind("tags", article.getTags().toArray(new String[0]))
-              .execute()
-      );
+      jdbi.inTransaction((Handle transHandle) -> {
+        jdbi.useHandle(handle ->
+            handle.createUpdate(
+                    "INSERT INTO articles (article_id, header, trending, tags) " +
+                        "VALUES (:article_id, :header, :trending, :tags)")
+                .bind("article_id", article.getId().getId())
+                .bind("header", article.getHeader())
+                .bind("trending", article.trending)
+                .bind("tags", article.getTags().toArray(new String[0]))
+                .execute()
+        );
+        return null;
+      });
     } catch (Exception e) {
       throw new ArticleIdDublicationException("Такая статья уже есть");
     }
@@ -143,15 +147,17 @@ public class PostgresArticlesRepository implements ArticlesRepository {
       throws ArticleNotFoundException, ArticleTagsCountExceedHeaderException, ArticleTagLengthExceedHeaderException, ArticleHeaderExceedHeaderException {
     checkArticleData(article);
 
-    int rowsUpdated = jdbi.withHandle(handle ->
-        handle.createUpdate(
+    int rowsUpdated = jdbi.inTransaction((Handle transHandle) -> {
+      return jdbi.withHandle(handle ->
+          handle.createUpdate(
                 "UPDATE articles SET header = :header, trending = :trending, tags = :tags WHERE article_id = :article_id")
             .bind("article_id", article.getId().getId())
             .bind("header", article.getHeader())
             .bind("trending", article.trending)
             .bind("tags", article.getTags().toArray(new String[0]))
             .execute()
-    );
+      );
+    });
 
     if (rowsUpdated == 0) {
       throw new ArticleNotFoundException("Невозможно обновить: такой статьи нет");
@@ -160,11 +166,13 @@ public class PostgresArticlesRepository implements ArticlesRepository {
 
   @Override
   public synchronized void delete(ArticleId articleId) throws ArticleNotFoundException {
-    int rowsDeleted = jdbi.withHandle(handle ->
-        handle.createUpdate("DELETE FROM articles WHERE article_id = :article_id")
-            .bind("article_id", articleId.getId())
-            .execute()
-    );
+    int rowsDeleted =jdbi.inTransaction((Handle transHandle) -> {
+        return jdbi.withHandle(handle ->
+            handle.createUpdate("DELETE FROM articles WHERE article_id = :article_id")
+                .bind("article_id", articleId.getId())
+                .execute()
+          );
+      });
 
     if (rowsDeleted == 0) {
       throw new ArticleNotFoundException("Невозможно удалить: такой статьи нет");

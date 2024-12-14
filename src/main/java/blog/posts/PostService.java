@@ -7,6 +7,8 @@ import blog.posts.articles.ArticlesRepository;
 import blog.posts.comments.Comment;
 import blog.posts.comments.CommentId;
 import blog.posts.comments.CommentsRepository;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.Jdbi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,27 +40,23 @@ public class PostService {
       ArticleId articleId = new ArticleId(id);
       Article articleToUpdate = this.articlesRepository.findById(articleId);
 
-      if (header == null) {
-        header = articleToUpdate.getHeader();
-      }
-      if (tags == null) {
-        tags = articleToUpdate.getTags();
-      }
-      if (comments == null) {
-        comments = articleToUpdate.getComments();
-      }
+      String updatedHeader = header != null ? header : articleToUpdate.getHeader();
+      Set<String> updatedTags = tags != null ? tags : articleToUpdate.getTags();
+      List<Comment> updatedComments = comments != null ? comments : articleToUpdate.getComments();
 
       Article updatedArticle = new Article(
           articleId,
-          header,
-          tags,
-          comments
+          updatedHeader,
+          updatedTags,
+          updatedComments
       );
       this.articlesRepository.update(updatedArticle);
     } catch (ArticleNotFoundException e) {
-      throw new ArticleUpdateException("Не удалось обновить статью с ID=" + id, e);
+      throw new ArticleUpdateException("Не удалось обновить статью с ID=" + id + ": статья не найдена.", e);
     } catch (ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new ArticleUpdateException("Превышения лимит переданных данных", e);
+    } catch (Exception e) {
+      throw new ArticleUpdateException("Произошла ошибка при обновлении статьи с ID=" + id, e);
     }
   }
 
