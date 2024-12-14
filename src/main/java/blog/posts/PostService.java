@@ -112,8 +112,10 @@ public class PostService {
 
     try {
       this.commentsRepository.add(newComment);
+
       Article articleWithNewComment = findArticleById(articleId);
       Article updatedArticle = articleWithNewComment.addComment(newComment);
+
       articlesRepository.update(updatedArticle);
     } catch (CommentIdDublicationException | ArticleFindException | ArticleNotFoundException | ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new CommentCreateException("Не удалось создать комментарий", e);
@@ -126,9 +128,16 @@ public class PostService {
       CommentId commentId = new CommentId(id);
       Comment commentToDelete = this.commentsRepository.findById(commentId);
       commentsRepository.delete(commentId);
+
       ArticleId articleId = commentToDelete.getArticle();
       Article articleWithDeletedComment = this.articlesRepository.findById(articleId);
-      Article updatedArticle = articleWithDeletedComment.removeComment(commentToDelete);
+      Article updatedArticle;
+      try {
+        updatedArticle = articleWithDeletedComment.removeComment(commentToDelete);
+      } catch (CommentNotFoundException e) {
+        updatedArticle = articleWithDeletedComment;
+      }
+
       articlesRepository.update(updatedArticle);
     } catch (ArticleNotFoundException | CommentNotFoundException | ArticleTagsCountExceedHeaderException | ArticleTagLengthExceedHeaderException | ArticleHeaderExceedHeaderException e) {
       throw new CommentDeleteException("Не удалось удалить комментарий с ID=" + id, e);

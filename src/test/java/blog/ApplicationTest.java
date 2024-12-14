@@ -2,18 +2,17 @@ package blog;
 
 import blog.posts.PostController;
 import blog.posts.PostService;
-import blog.posts.articles.InMemoryArticlesRepository;
 import blog.posts.articles.PostgresArticlesRepository;
-import blog.posts.comments.InMemoryCommentsRepository;
 import blog.posts.comments.PostgresCommentsRepository;
 import blog.posts.responses.ArticleCreateResponse;
 import blog.posts.responses.ArticleGetResponse;
 import blog.posts.responses.CommentCreateResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import org.flywaydb.core.Flyway;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spark.Service;
@@ -25,14 +24,47 @@ import java.net.http.HttpResponse;
 import java.util.HashSet;
 import java.util.List;
 
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Testcontainers
 class ApplicationTest {
+  @Container
+  public static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:13");
+
+  static {
+    POSTGRES.start();
+  }
+
+  private static Jdbi jdbi;
   private Service service;
 
-  @BeforeEach
+  @BeforeAll
+  static void beforeAll() {
+    String postgresJdbcUrl = POSTGRES.getJdbcUrl();
+    Flyway flyway =
+        Flyway.configure()
+            .outOfOrder(true)
+            .locations("classpath:db/migrations")
+            .dataSource(postgresJdbcUrl, POSTGRES.getUsername(), POSTGRES.getPassword())
+            .load();
+    flyway.migrate();
+    jdbi = Jdbi.create(postgresJdbcUrl, POSTGRES.getUsername(), POSTGRES.getPassword());
+
+  }
+
+    @BeforeEach
   void beforeEach() {
+      jdbi.inTransaction((Handle bothHandle) -> {
+            jdbi.useTransaction(handle -> handle.createUpdate("DELETE FROM articles").execute());
+            jdbi.useTransaction(handle -> handle.createUpdate("DELETE FROM comment").execute());
+            return null;
+          }
+      );
     service = Service.ignite();
   }
 
@@ -44,11 +76,6 @@ class ApplicationTest {
 
   @Test
   void TestThrows() throws Exception {
-    Config config = ConfigFactory.load();
-
-    Jdbi jdbi = Jdbi.create(config.getString("app.database.url"), config.getString("app.database.user"),
-        config.getString("app.database.password"));
-
     ObjectMapper objectMapper = new ObjectMapper();
     Application application = new Application(
         List.of(
@@ -187,14 +214,16 @@ class ApplicationTest {
 
   @Test
   void generale2eTest() throws Exception {
+    var rep = new PostgresCommentsRepository(jdbi);
+
     ObjectMapper objectMapper = new ObjectMapper();
     Application application = new Application(
         List.of(
             new PostController(
                 service,
                 new PostService(
-                    new InMemoryArticlesRepository(),
-                    new InMemoryCommentsRepository()
+                    new PostgresArticlesRepository(jdbi),
+                    rep
                 ),
                 objectMapper
             )
@@ -268,6 +297,14 @@ class ApplicationTest {
             HttpResponse.BodyHandlers.ofString(UTF_8)
         );
     assertEquals(204, response.statusCode());
+
+    System.out.println("!!! " + newCommentId);
+
+    System.out.print("!!! [ ");
+    for (var e : rep.getAll()) {
+      System.out.print(e.getId().getId() + ", ");
+    }
+    System.out.println(" ]");
 
     response = HttpClient.newHttpClient()
         .send(

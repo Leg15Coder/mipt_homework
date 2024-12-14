@@ -1,5 +1,6 @@
 package blog.posts.comments;
 
+import blog.posts.articles.ArticleId;
 import blog.posts.exceptions.CommentIdDublicationException;
 import blog.posts.exceptions.CommentNotFoundException;
 
@@ -21,6 +22,11 @@ public class InMemoryCommentsRepository implements CommentsRepository {
   @Override
   public List<Comment> getAll() {
     return new ArrayList<>(comments.values());
+  }
+
+  @Override
+  public List<Comment> findAllByArticleId(ArticleId articleId) {
+    return List.of(); // todo later
   }
 
   @Override

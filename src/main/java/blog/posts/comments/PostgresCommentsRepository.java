@@ -56,6 +56,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
     );
   }
 
+  @Override
   public List<Comment> findAllByArticleId(ArticleId articleId) {
     return jdbi.withHandle(handle ->
         handle.createQuery("SELECT comment_id, article_id, content FROM comment WHERE article_id = :article_id")
@@ -72,7 +73,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
             .bind("comment_id", id.getId())
             .map((rs, ctx) -> commentFromMap(rs))
             .findOne()
-            .orElseThrow(() -> new CommentNotFoundException("Комментарий с ID " + id.getId() + " не найден"))
+            .orElseThrow(() -> new CommentNotFoundException("Комментарий с ID=" + id.getId() + " не найден"))
     );
   }
 
@@ -90,7 +91,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
         return null;
       });
     } catch (Exception e) {
-      throw new CommentIdDublicationException("Комментарий с ID " + comment.getId().getId() + " уже существует");
+      throw new CommentIdDublicationException("Комментарий с ID=" + comment.getId().getId() + " уже существует");
     }
   }
 
@@ -106,7 +107,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
     });
 
     if (rowsUpdated == 0) {
-      throw new CommentNotFoundException("Невозможно обновить: комментарий с ID " + comment.getId().getId() + " не найден");
+      throw new CommentNotFoundException("Невозможно обновить: комментарий с ID=" + comment.getId().getId() + " не найден");
     }
   }
 
@@ -121,7 +122,7 @@ public class PostgresCommentsRepository implements CommentsRepository {
     });
 
     if (rowsDeleted == 0) {
-      throw new CommentNotFoundException("Невозможно удалить: комментарий с ID " + commentId.getId() + " не найден");
+      throw new CommentNotFoundException("Невозможно удалить: комментарий с ID=" + commentId.getId() + " не найден");
     }
   }
 }

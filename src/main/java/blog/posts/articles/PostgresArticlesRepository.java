@@ -44,6 +44,7 @@ public class PostgresArticlesRepository implements ArticlesRepository {
           extractTags(rs.getArray("tags")),
           getCommentsByArticleId(rs.getLong("article_id"))
       );
+
     } catch (Exception e) {
       throw new RuntimeException("Ошибка при маппинге статьи из ResultSet", e);
     }
@@ -81,7 +82,7 @@ public class PostgresArticlesRepository implements ArticlesRepository {
 
   @Override
   public ArticleId generateId() {
-    Long value;
+    long value;
 
     try {
       value = jdbi.withHandle(handle ->
@@ -114,7 +115,7 @@ public class PostgresArticlesRepository implements ArticlesRepository {
             .bind("article_id", id.getId())
             .map((rs, ctx) -> articleFromMap(rs))
             .findOne()
-            .orElseThrow(() -> new ArticleNotFoundException("Невозможно найти: нет статьи с ID " + id.getId()))
+            .orElseThrow(() -> new ArticleNotFoundException("Невозможно найти: нет статьи с ID=" + id.getId()))
     );
   }
 
@@ -148,7 +149,7 @@ public class PostgresArticlesRepository implements ArticlesRepository {
     checkArticleData(article);
 
     int rowsUpdated = jdbi.inTransaction((Handle transHandle) -> {
-      return jdbi.withHandle(handle ->
+      int rows = jdbi.withHandle(handle ->
           handle.createUpdate(
                 "UPDATE articles SET header = :header, trending = :trending, tags = :tags WHERE article_id = :article_id")
             .bind("article_id", article.getId().getId())
@@ -157,10 +158,53 @@ public class PostgresArticlesRepository implements ArticlesRepository {
             .bind("tags", article.getTags().toArray(new String[0]))
             .execute()
       );
+
+      List<Comment> dependedComments = jdbi.withHandle(handle ->
+          handle.createQuery("SELECT comment_id, article_id, content FROM comment WHERE article_id = :article_id")
+              .bind("article_id", article.getId().getId())
+              .map((rs, ctx) -> commentFromMap(rs))
+              .list()
+      );
+
+      for (Comment comment : article.getComments()) {
+        if (!dependedComments.contains(comment)) {
+          jdbi.useHandle(handle ->
+              handle.createUpdate("INSERT INTO comment (comment_id, article_id, content) VALUES (:comment_id, :article_id, :content)")
+                  .bind("comment_id", comment.getId().getId())
+                  .bind("article_id", article.getId())
+                  .bind("content", comment.getText())
+                  .execute()
+          );
+        }
+      }
+
+      for (Comment comment : dependedComments) {
+        if (!article.getComments().contains(comment)) {
+          jdbi.withHandle(handle ->
+              handle.createUpdate("DELETE FROM comment WHERE comment_id = :comment_id")
+                  .bind("comment_id", comment.getId().getId())
+                  .execute()
+          );
+        }
+      }
+
+      return rows;
     });
 
     if (rowsUpdated == 0) {
       throw new ArticleNotFoundException("Невозможно обновить: такой статьи нет");
+    }
+  }
+
+  private Comment commentFromMap(ResultSet rs) {
+    try {
+      return new Comment(
+          new CommentId(rs.getLong("comment_id")),
+          new ArticleId(rs.getLong("article_id")),
+          rs.getString("content")
+      );
+    } catch (Exception e) {
+      throw new RuntimeException("Ошибка при маппинге комментария из ResultSet", e);
     }
   }
 

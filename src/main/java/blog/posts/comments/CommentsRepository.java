@@ -1,5 +1,6 @@
 package blog.posts.comments;
 
+import blog.posts.articles.ArticleId;
 import blog.posts.exceptions.CommentIdDublicationException;
 import blog.posts.exceptions.CommentNotFoundException;
 
@@ -9,6 +10,8 @@ public interface CommentsRepository {
   CommentId generateId();
 
   List<Comment> getAll();
+
+  List<Comment> findAllByArticleId(ArticleId articleId);
 
   Comment findById(CommentId id) throws CommentNotFoundException;
 
